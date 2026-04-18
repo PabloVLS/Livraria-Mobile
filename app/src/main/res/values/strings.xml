@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">LivrariaMobile</string>
+    <string name="search_hint">Buscar livros...</string>
+    <string name="search_button">Buscar</string>
+    <string name="loading_text">Carregando...</string>
+    <string name="error_title">Erro ao buscar livros</string>
+    <string name="error_message">Não foi possível carregar os livros. Tente novamente.</string>
+    <string name="retry_button">Tentar novamente</string>
+    <string name="empty_message">Nenhum livro encontrado</string>
+    <string name="book_title">Título do Livro</string>
+    <string name="book_author">Autor</string>
+    <string name="book_description">Descrição</string>
+</resources>
