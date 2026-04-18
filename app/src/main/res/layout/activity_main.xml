@@ -16,32 +16,66 @@
         android:background="@color/white"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Search EditText -->
+        <!-- Search by Title -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/searchInputLayout"
+            android:id="@+id/searchTitleLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:hint="Buscar por título..."
             android:layout_marginEnd="12dp"
-            android:hint="@string/search_hint"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/searchAuthorLayout"
             app:layout_constraintEnd_toStartOf="@+id/searchButton"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:boxBackgroundColor="@color/surface"
-            app:startIconDrawable="@drawable/ic_search_24">
+            app:startIconDrawable="@drawable/ic_search_24"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/searchEditText"
+                android:id="@+id/searchTitleEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:maxLines="1" />
+                android:maxLines="1"
+                android:textSize="14sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Search by Author -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/searchAuthorLayout"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Buscar por autor..."
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/searchButton"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/searchTitleLayout"
+            app:boxBackgroundColor="@color/surface"
+            app:startIconDrawable="@drawable/ic_search_24"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/searchAuthorEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1"
+                android:textSize="14sp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -53,9 +87,9 @@
             android:contentDescription="@string/search_button"
             app:icon="@drawable/ic_search_24"
             app:iconSize="24dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/searchAuthorLayout"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/searchTitleLayout"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -65,10 +99,11 @@
         android:id="@+id/booksRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
+        android:background="@color/background"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -76,15 +111,42 @@
         tools:listitem="@layout/item_book" />
 
     <!-- Loading State -->
-    <ProgressBar
-        android:id="@+id/loadingProgressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/loadingStateContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appBarLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
+
+        <ProgressBar
+            android:id="@+id/loadingProgressBar"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:indeterminateDrawable="@drawable/loading_spinner"
+            android:indeterminate="true"
+            app:layout_constraintBottom_toTopOf="@+id/loadingText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
+
+        <TextView
+            android:id="@+id/loadingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Carregando..."
+            android:textSize="16sp"
+            android:textColor="@color/text_secondary"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/loadingProgressBar" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Empty State -->
     <androidx.constraintlayout.widget.ConstraintLayout

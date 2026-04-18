@@ -4,28 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="2dp"
+    android:layout_margin="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
     app:strokeColor="@color/divider"
     app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="12dp">
+        android:padding="16dp">
 
         <!-- Book Cover Image -->
         <ImageView
             android:id="@+id/bookCover"
-            android:layout_width="80dp"
-            android:layout_height="120dp"
+            android:layout_width="100dp"
+            android:layout_height="150dp"
             android:contentDescription="@string/book_title"
             android:scaleType="centerCrop"
             android:background="@color/surface"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
             tools:srcCompat="@drawable/ic_launcher_foreground" />
 
         <!-- Book Details Container -->
@@ -33,7 +32,7 @@
             android:id="@+id/bookDetailsContainer"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/bookCover"
             app:layout_constraintTop_toTopOf="parent">
@@ -44,11 +43,12 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/book_title"
-                android:textSize="16sp"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"
-                android:maxLines="2"
+                android:maxLines="3"
                 android:ellipsize="end"
+                android:lineSpacingMultiplier="1.1"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -58,27 +58,29 @@
                 android:id="@+id/bookAuthor"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/book_author"
                 android:textSize="14sp"
-                android:textColor="@color/text_secondary"
+                android:textStyle="italic"
+                android:textColor="@color/secondary"
                 android:maxLines="1"
                 android:ellipsize="end"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/bookTitle" />
 
-            <!-- Book Description -->
+            <!-- Book Description/Sinopse -->
             <TextView
                 android:id="@+id/bookDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="10dp"
                 android:text="@string/book_description"
                 android:textSize="13sp"
                 android:textColor="@color/text_secondary"
-                android:maxLines="2"
+                android:maxLines="3"
                 android:ellipsize="end"
+                android:lineSpacingMultiplier="1.05"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/bookAuthor" />
@@ -88,4 +90,3 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </com.google.android.material.card.MaterialCardView>
-

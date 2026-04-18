@@ -1,84 +1,44 @@
 package com.example.livrariamobile
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.livrariamobile.viewmodel.BookViewModel
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var bookViewModel: BookViewModel
     private lateinit var bookAdapter: BookAdapter
     private lateinit var booksRecyclerView: RecyclerView
-    private lateinit var loadingProgressBar: ProgressBar
+    private lateinit var loadingStateContainer: ConstraintLayout
     private lateinit var emptyStateContainer: ConstraintLayout
     private lateinit var errorStateContainer: ConstraintLayout
-    private lateinit var searchEditText: EditText
+    private lateinit var searchTitleEditText: EditText
+    private lateinit var searchAuthorEditText: EditText
     private lateinit var searchButton: Button
-
-    // Mock data for demonstration
-    private val mockBooks = listOf(
-        Book(
-            id = "1",
-            title = "O Planeta dos Macacos",
-            author = "Pierre Boulle",
-            description = "Um clássico de ficção científica que explora temas sobre evolução e sociedade.",
-            coverImageUrl = null
-        ),
-        Book(
-            id = "2",
-            title = "1984",
-            author = "George Orwell",
-            description = "Uma distopia futurista que retrata um totalitarismo extremo e a luta pela liberdade.",
-            coverImageUrl = null
-        ),
-        Book(
-            id = "3",
-            title = "Dom Casmurro",
-            author = "Machado de Assis",
-            description = "Um romance brasileiro que explora ciúmes, traição e memória através de uma narrativa envolvente.",
-            coverImageUrl = null
-        ),
-        Book(
-            id = "4",
-            title = "O Cortiço",
-            author = "Aluísio Azevedo",
-            description = "Uma obra que retrata a vida em um cortiço do Rio de Janeiro com realismo intenso.",
-            coverImageUrl = null
-        ),
-        Book(
-            id = "5",
-            title = "O Senhor dos Anéis",
-            author = "J.R.R. Tolkien",
-            description = "Uma epopeia de fantasia que acompanha uma jornada pela Terra Média em busca de destruir um anel.",
-            coverImageUrl = null
-        ),
-        Book(
-            id = "6",
-            title = "Cem Anos de Solidão",
-            author = "Gabriel García Márquez",
-            description = "Uma saga familiar que mistura realismo mágico com histórias de amor e morte.",
-            coverImageUrl = null
-        )
-    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Initialize views using findViewById
+        // Initialize views
         booksRecyclerView = findViewById(R.id.booksRecyclerView)
-        loadingProgressBar = findViewById(R.id.loadingProgressBar)
+        loadingStateContainer = findViewById(R.id.loadingStateContainer)
         emptyStateContainer = findViewById(R.id.emptyStateContainer)
         errorStateContainer = findViewById(R.id.errorStateContainer)
-        searchEditText = findViewById(R.id.searchEditText)
+        searchTitleEditText = findViewById(R.id.searchTitleEditText)
+        searchAuthorEditText = findViewById(R.id.searchAuthorEditText)
         searchButton = findViewById(R.id.searchButton)
 
         val main = findViewById<ConstraintLayout>(R.id.main)
@@ -88,9 +48,12 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        // Initialize ViewModel
+        bookViewModel = ViewModelProvider(this).get(BookViewModel::class.java)
+
         setupRecyclerView()
         setupSearchListeners()
-        showBooksList()
+        observeViewModel()
     }
 
     private fun setupRecyclerView() {
@@ -106,7 +69,16 @@ class MainActivity : AppCompatActivity() {
             performSearch()
         }
 
-        searchEditText.setOnEditorActionListener { _, actionId, _ ->
+        searchTitleEditText.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                performSearch()
+                true
+            } else {
+                false
+            }
+        }
+
+        searchAuthorEditText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
                 performSearch()
                 true
@@ -117,69 +89,111 @@ class MainActivity : AppCompatActivity() {
 
         val retryButton = findViewById<Button>(R.id.retryButton)
         retryButton.setOnClickListener {
-            if (searchEditText.text?.toString()?.isNotEmpty() == true) {
+            val hasTitle = searchTitleEditText.text?.toString()?.isNotEmpty() == true
+            val hasAuthor = searchAuthorEditText.text?.toString()?.isNotEmpty() == true
+            if (hasTitle || hasAuthor) {
                 performSearch()
             } else {
-                showBooksList()
+                showBooksList(emptyList())
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        bookViewModel.isLoading.observe(this) { isLoading ->
+            Log.d("MainActivity", "🔄 Loading: $isLoading")
+            if (isLoading) {
+                Log.d("MainActivity", "Showing loading state")
+                showLoadingState()
+            }
+        }
+
+        bookViewModel.books.observe(this) { books ->
+            Log.d("MainActivity", "📚 Books received: ${books.size} items")
+            books.forEach { book ->
+                Log.d("MainActivity", "  - ${book.title} by ${book.author}")
+            }
+            if (books.isNotEmpty()) {
+                Log.d("MainActivity", "✅ Showing book list")
+                showBooksList(books)
+                bookViewModel.clearError()
+            } else {
+                Log.d("MainActivity", "❌ No books, showing empty state")
+                showEmptyState()
+            }
+        }
+
+        bookViewModel.errorMessage.observe(this) { errorMessage ->
+            Log.d("MainActivity", "⚠️ Error message: $errorMessage")
+            if (!errorMessage.isNullOrEmpty()) {
+                if (booksRecyclerView.visibility != View.VISIBLE) {
+                    Log.d("MainActivity", "Showing error toast and error state")
+                    Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    showErrorState()
+                }
             }
         }
     }
 
     private fun performSearch() {
-        val query = searchEditText.text?.toString()?.trim() ?: ""
+        val title = searchTitleEditText.text?.toString()?.trim() ?: ""
+        val author = searchAuthorEditText.text?.toString()?.trim() ?: ""
 
-        if (query.isEmpty()) {
+        Log.d("MainActivity", "Searching for - Title: $title, Author: $author")
+
+        if (title.isEmpty() && author.isEmpty()) {
             showEmptyState()
             return
         }
 
-        showLoadingState()
-
-        // Simulate network delay
-        findViewById<View>(R.id.main).postDelayed({
-            val results = searchBooks(query)
-            if (results.isEmpty()) {
-                showEmptyState()
-            } else {
-                showBooksList(results)
-            }
-        }, 1500) // 1.5 second delay to simulate network request
-    }
-
-    private fun searchBooks(query: String): List<Book> {
-        // Simple search implementation - filters by title or author
-        val lowerQuery = query.lowercase()
-        return mockBooks.filter { book ->
-            book.title.lowercase().contains(lowerQuery) ||
-            book.author.lowercase().contains(lowerQuery)
+        // Construir query combinada
+        var query = ""
+        if (title.isNotEmpty()) {
+            query += "intitle:$title"
         }
+        if (author.isNotEmpty()) {
+            if (query.isNotEmpty()) query += " "
+            query += "inauthor:$author"
+        }
+
+        bookViewModel.searchBooks(query)
     }
 
-    private fun showBooksList(books: List<Book> = mockBooks) {
+    private fun showBooksList(books: List<Book>) {
+        Log.d("MainActivity", "🎯 showBooksList called with ${books.size} books")
         booksRecyclerView.visibility = View.VISIBLE
-        loadingProgressBar.visibility = View.GONE
+        loadingStateContainer.visibility = View.GONE
         emptyStateContainer.visibility = View.GONE
         errorStateContainer.visibility = View.GONE
+        Log.d("MainActivity", "Updated visibility - RecyclerView is VISIBLE")
+
         bookAdapter.updateBooks(books)
+        Log.d("MainActivity", "Updated adapter with ${books.size} books")
+
+        Toast.makeText(this, "Encontrados ${books.size} livros!", Toast.LENGTH_SHORT).show()
     }
 
     private fun showLoadingState() {
+        Log.d("MainActivity", "🔄 showLoadingState called")
         booksRecyclerView.visibility = View.GONE
-        loadingProgressBar.visibility = View.VISIBLE
+        loadingStateContainer.visibility = View.VISIBLE
         emptyStateContainer.visibility = View.GONE
         errorStateContainer.visibility = View.GONE
     }
 
     private fun showEmptyState() {
+        Log.d("MainActivity", "📭 showEmptyState called")
         booksRecyclerView.visibility = View.GONE
-        loadingProgressBar.visibility = View.GONE
+        loadingStateContainer.visibility = View.GONE
         emptyStateContainer.visibility = View.VISIBLE
         errorStateContainer.visibility = View.GONE
+        Toast.makeText(this, "Nenhum livro encontrado", Toast.LENGTH_SHORT).show()
     }
 
     private fun showErrorState() {
+        Log.d("MainActivity", "❌ showErrorState called")
         booksRecyclerView.visibility = View.GONE
-        loadingProgressBar.visibility = View.GONE
+        loadingStateContainer.visibility = View.GONE
         emptyStateContainer.visibility = View.GONE
         errorStateContainer.visibility = View.VISIBLE
     }

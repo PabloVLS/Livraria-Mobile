@@ -1,11 +1,14 @@
 package com.example.livrariamobile
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 
 class BookAdapter(private var books: List<Book> = emptyList()) :
     RecyclerView.Adapter<BookAdapter.BookViewHolder>() {
@@ -40,11 +43,31 @@ class BookAdapter(private var books: List<Book> = emptyList()) :
             bookAuthor.text = book.author
             bookDescription.text = book.description
 
-            // Set a placeholder background color for the cover image
-            // In a real app, you would load the image from URL using Glide or similar
-            bookCover.setBackgroundColor(
-                itemView.context.getColor(android.R.color.darker_gray)
-            )
+            if (!book.coverImageUrl.isNullOrEmpty()) {
+                var imageUrl = book.coverImageUrl
+                if (imageUrl.startsWith("http://")) {
+                    imageUrl = imageUrl.replace("http://", "https://")
+                }
+
+                Glide.with(itemView.context)
+                    .load(imageUrl)
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .placeholder(R.color.surface)
+                    .error(R.color.surface)
+                    .centerCrop()
+                    .into(bookCover)
+            } else {
+                bookCover.setBackgroundColor(
+                    itemView.context.getColor(R.color.surface)
+                )
+            }
+
+            // Click listener para abrir detalhes
+            itemView.setOnClickListener {
+                val intent = Intent(itemView.context, BookDetailActivity::class.java)
+                intent.putExtra("book", book)
+                itemView.context.startActivity(intent)
+            }
         }
     }
 }
