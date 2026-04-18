@@ -143,16 +143,15 @@ data class Book(
 
 ---
 
-## 🚀 Próximos Passos (Opcional)
+## 🚀 Imagens
 
-Para implementar integração real com Google Books API:
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/577fc6b9-70ad-4fd8-af6c-9efef62ddc37" width="316" alt="Captura de tela 1" />
+</p>
 
-1. **Adicionar Retrofit** para chamadas HTTP
-2. **Adicionar Glide/Coil** para carregamento de imagens
-3. **Implementar ViewModel** com LiveData
-4. **Adicionar Coroutines** para requisições assíncronas
-5. **Integrar com Google Books API**
-6. **Cache local com Room Database**
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f1e75a66-6c92-4465-aa77-bae3319b4605" width="319" alt="Captura de tela 2" />
+</p>
 
 ---
 
